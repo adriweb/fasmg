@@ -21,9 +21,7 @@ include '../../version.inc'
 interpreter '/usr/lib/dyld'
 uses '/usr/lib/libSystem.B.dylib'
 
-import libc.malloc,'_malloc',\
-       libc.realloc,'_realloc',\
-       libc.free,'_free',\
+import libc.free,'_free',\
        libc.fopen,'_fopen',\
        libc.fclose,'_fclose',\
        libc.fread,'_fread',\
@@ -32,6 +30,8 @@ import libc.malloc,'_malloc',\
        libc.ftell,'_ftell',\
        libc.time,'_time',\
        libc.write,'_write',\
+       mmap,'_mmap',\
+       munmap,'_munmap',\
        getenv,'_getenv',\
        gettimeofday,'_gettimeofday',\
        exit,'_exit'
@@ -459,6 +459,7 @@ section '__text' align 16
 
   use32on64
 
+  include '../../malloc.inc'
   include '../../assembler.inc'
   include '../../symbols.inc'
   include '../../expressions.inc'
@@ -509,6 +510,9 @@ section '__bss' align 4
 
   include '../../variables.inc'
 
+  mmap_hint dd ?
+  malloc_freelist dd ?
+
   source_path dd ?
   output_path dd ?
   maximum_number_of_passes dd ?
@@ -532,4 +536,15 @@ section '__bss' align 4
   verbosity_level dd ?
   no_logo db ?
 
+  local_heap_available db ?
+
   path_buffer rb 1000h
+
+segment '__DATA' readable writable
+
+  align 1000h
+
+  LOCAL_HEAP_SIZE = 1000000h
+
+  local_heap rb LOCAL_HEAP_SIZE
+
